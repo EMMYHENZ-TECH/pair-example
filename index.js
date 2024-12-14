@@ -17,13 +17,13 @@ const path = require('path');
 
 const app = express();
 
-// Use Render's port or fallback to 3000 for local development
+// Use Render's PORT environment variable or fallback to 3000 for local development
 const port = process.env.PORT || 3000;
 let session;
 const msgRetryCounterCache = new NodeCache();
 const mutex = new Mutex();
 
-// Serve static files (e.g., index.html, style.css) from the "static" folder
+// Serve static files (index.html, style.css, etc.) from the "static" folder
 app.use(express.static(path.join(__dirname, 'static')));
 
 async function connector(Num, res) {
@@ -115,6 +115,7 @@ app.get('/pair', async (req, res) => {
     }
 });
 
+// Start the server on the port provided by Render or 3000 for local
 app.listen(port, () => {
-    console.log(`Running on PORT:${port}`);
+    console.log(`Server is running on PORT: ${port}`);
 });
