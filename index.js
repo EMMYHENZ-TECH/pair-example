@@ -16,16 +16,11 @@ const config = require('./config');
 const path = require('path');
 
 var app = express();
-var port = process.env.PORT || 3000;  // Vercel uses dynamic port
+var port = 3000;
 var session;
 const msgRetryCounterCache = new NodeCache();
 const mutex = new Mutex();
 app.use(express.static(path.join(__dirname, 'static')));
-
-// Add Vercel's handler to export the app
-module.exports = (req, res) => {
-  app(req, res);
-};
 
 async function connector(Num, res) {
     var sessionDir = './session';
@@ -41,8 +36,8 @@ async function connector(Num, res) {
         },
         printQRInTerminal: false,
         logger: pino({ level: 'fatal' }).child({ level: 'fatal' }),
-        browser: Browsers.macOS("Safari"),
-        markOnlineOnConnect: true,
+        browser: Browsers.macOS("Safari"), //check docs for more custom options
+        markOnlineOnConnect: true, //true or false yoour choice
         msgRetryCounterCache
     });
 
@@ -74,10 +69,13 @@ async function connector(Num, res) {
                 } else {
                     sID = 'Fekd up';
                 }
-                await session.sendMessage(session.user.id, { image: { url: `${config.IMAGE}` }, caption: `*Session ID*\n\n${sID}` }, { quoted: myr });
+              //edit this you can add ur own image in config or not ur choice
+              await session.sendMessage(session.user.id, { image: { url: `${config.IMAGE}` }, caption: `*Session ID*\n\n${sID}` }, { quoted: myr });
+            
             } catch (error) {
                 console.error('Error:', error);
             } finally {
+                //await delay(500);
                 if (fs.existsSync(path.join(__dirname, './session'))) {
                     fs.rmdirSync(path.join(__dirname, './session'), { recursive: true });
                 }
@@ -104,7 +102,8 @@ app.get('/pair', async (req, res) => {
     if (!Num) {
         return res.status(418).json({ message: 'Phone number is required' });
     }
-
+  
+  //you can remove mutex if you dont want to queue the requests
     var release = await mutex.acquire();
     try {
         await connector(Num, res);
